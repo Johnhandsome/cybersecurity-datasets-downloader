@@ -1,4 +1,4 @@
-.PHONY: help install setup run phase1 phase2 phase3 phase4 check clean
+.PHONY: help install setup run phase1 phase2 phase3 phase4 phase5 check clean
 
 help:
 	@echo "🛡️  Cybersecurity Datasets Downloader - Commands"
@@ -13,6 +13,7 @@ help:
 	@echo "  make phase2    - Download Phase 2 (Exploits & Tools)"
 	@echo "  make phase3    - Download Phase 3 (YARA & Sigma)"
 	@echo "  make phase4    - Download Phase 4 (CVE Database)"
+	@echo "  make phase5    - Download Phase 5 (Advanced Threats - WITH safety prompt)"
 	@echo "  make check     - Check download progress"
 	@echo "  make clean     - Remove downloaded datasets (prompts for confirmation)"
 	@echo ""
@@ -45,6 +46,11 @@ phase3:
 phase4:
 	@echo "🚀 Starting Phase 4: CVE Database..."
 	python download_all.py --phase 4
+
+phase5:
+	@echo "🚀 Starting Phase 5: Advanced Threats..."
+	@echo "⚠️  WARNING: Phase 5 includes LIVE MALWARE samples!"
+	python download_all.py --phase 5
 
 check:
 	@echo "📊 Checking progress..."
