@@ -16,13 +16,15 @@ from typing import Dict, Optional
 class Phase4Downloader:
     """Downloads CVE database from NVD API."""
     
-    def __init__(self, base_dir: str = "./cybersecurity_datasets"):
+    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False):
         """Initialize the Phase 4 downloader.
         
         Args:
             base_dir: Base directory for all datasets
+            update: Whether to update existing data
         """
         self.base_dir = Path(base_dir)
+        self.update = update
         self.phase_dir = self.base_dir / "phase4_cve_database"
         self.phase_dir.mkdir(parents=True, exist_ok=True)
         
@@ -61,29 +63,32 @@ class Phase4Downloader:
         
         # Check if file already exists
         if output_file.exists():
-            print(f"  ⏭️  File already exists: {output_file.name}")
-            try:
-                with open(output_file, "r") as f:
-                    data = json.load(f)
-                    cve_count = len(data.get("vulnerabilities", []))
-                    print(f"  📊 Contains {cve_count} CVEs")
-                    self.results["cve_files"].append({
-                        "year": year,
-                        "file": output_file.name,
-                        "cve_count": cve_count,
-                        "status": "already_exists"
-                    })
-                    self.results["total_cves"] += cve_count
-                    return True
-            except Exception as e:
-                print(f"  ⚠️  Error reading existing file: {e}")
+            if not self.update:
+                print(f"  ⏭️  File already exists: {output_file.name}")
+                try:
+                    with open(output_file, "r") as f:
+                        data = json.load(f)
+                        cve_count = len(data.get("vulnerabilities", []))
+                        print(f"  📊 Contains {cve_count} CVEs")
+                        self.results["cve_files"].append({
+                            "year": year,
+                            "file": output_file.name,
+                            "cve_count": cve_count,
+                            "status": "already_exists"
+                        })
+                        self.results["total_cves"] += cve_count
+                        return True
+                except Exception as e:
+                    print(f"  ⚠️  Error reading existing file: {e}")
+            else:
+                print(f"  🔄 Updating CVEs for {year}...")
         
         all_vulnerabilities = []
         start_index = 0
         
-        # Date range for the year
-        pub_start_date = f"{year}-01-01T00:00:00.000"
-        pub_end_date = f"{year}-12-31T23:59:59.999"
+        # Date range for the year - use correct NVD API v2.0 format
+        pub_start_date = f"{year}-01-01T00:00:00.000 UTC-00:00"
+        pub_end_date = f"{year}-12-31T23:59:59.999 UTC-00:00"
         
         try:
             while True:
@@ -115,6 +120,12 @@ class Phase4Downloader:
                         print("  ⏸️  Rate limited - waiting 60 seconds...")
                         time.sleep(60)
                         continue
+                    
+                    # Handle 404 errors gracefully
+                    if response.status_code == 404:
+                        print(f"  ⚠️  No CVEs found for {year} (this may be normal)")
+                        print(f"  💡 NVD may not have data for this year yet")
+                        return True  # Not an error, just no data
                     
                     response.raise_for_status()
                     data = response.json()
@@ -192,8 +203,9 @@ class Phase4Downloader:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
         
-        mod_start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.000")
-        mod_end_date = end_date.strftime("%Y-%m-%dT%H:%M:%S.000")
+        # Use correct NVD API v2.0 format
+        mod_start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.000 UTC-00:00")
+        mod_end_date = end_date.strftime("%Y-%m-%dT%H:%M:%S.000 UTC-00:00")
         
         all_vulnerabilities = []
         start_index = 0

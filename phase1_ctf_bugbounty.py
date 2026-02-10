@@ -14,13 +14,15 @@ from typing import Dict, List, Tuple
 class Phase1Downloader:
     """Downloads CTF writeups and bug bounty reports."""
     
-    def __init__(self, base_dir: str = "./cybersecurity_datasets"):
+    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False):
         """Initialize the Phase 1 downloader.
         
         Args:
             base_dir: Base directory for all datasets
+            update: Whether to update existing repositories
         """
         self.base_dir = Path(base_dir)
+        self.update = update
         self.phase_dir = self.base_dir / "phase1_ctf_bugbounty"
         self.ctf_dir = self.phase_dir / "ctf_writeups"
         self.bugbounty_dir = self.phase_dir / "bugbounty_repos"
@@ -38,6 +40,31 @@ class Phase1Downloader:
             "errors": []
         }
     
+    def check_already_downloaded(self, target_dir: Path) -> bool:
+        """Check if repository already exists and is valid.
+        
+        Args:
+            target_dir: Directory to check
+            
+        Returns:
+            bool: True if already exists and valid
+        """
+        if not target_dir.exists():
+            return False
+        
+        # Check if it's a valid git repo or has content
+        if (target_dir / ".git").exists():
+            return True
+        
+        # Check if directory has any content
+        try:
+            if len(list(target_dir.iterdir())) > 0:
+                return True
+        except Exception:
+            pass
+        
+        return False
+    
     def clone_repo(self, url: str, target_dir: Path) -> Tuple[bool, str]:
         """Clone a git repository with error handling.
         
@@ -49,9 +76,29 @@ class Phase1Downloader:
             Tuple of (success: bool, message: str)
         """
         try:
-            if target_dir.exists():
-                print(f"  ⏭️  Already exists: {target_dir.name}")
-                return True, f"Already exists: {target_dir.name}"
+            # Check if already downloaded
+            if self.check_already_downloaded(target_dir):
+                if self.update and (target_dir / ".git").exists():
+                    print(f"  🔄 Updating {target_dir.name}...")
+                    try:
+                        result = subprocess.run(
+                            ["git", "-C", str(target_dir), "pull"],
+                            capture_output=True,
+                            text=True,
+                            timeout=300
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ Updated {target_dir.name}")
+                            return True, f"Updated: {target_dir.name}"
+                        else:
+                            print(f"  ⚠️  Update failed, keeping existing: {target_dir.name}")
+                            return True, f"Already exists: {target_dir.name}"
+                    except Exception as e:
+                        print(f"  ⚠️  Update failed: {e}, keeping existing")
+                        return True, f"Already exists: {target_dir.name}"
+                else:
+                    print(f"  ⏭️  Already exists: {target_dir.name}")
+                    return True, f"Already exists: {target_dir.name}"
             
             print(f"  📦 Cloning {url}...")
             result = subprocess.run(
@@ -93,7 +140,7 @@ class Phase1Downloader:
                 
                 print("  📦 Downloading from Hugging Face...")
                 snapshot_download(
-                    repo_id="cybersecurity-datasets/hackerone-reports",
+                    repo_id="Hacker0x01/hackerone_disclosed_reports",
                     repo_type="dataset",
                     local_dir=str(self.hackerone_dir),
                     local_dir_use_symlinks=False
@@ -105,7 +152,7 @@ class Phase1Downloader:
             except ImportError:
                 print("  ⚠️  huggingface_hub not installed")
                 print("  💡 To download HackerOne dataset, install: pip install huggingface-hub")
-                print("  💡 Then run: huggingface-cli download cybersecurity-datasets/hackerone-reports")
+                print("  💡 Then run: huggingface-cli download Hacker0x01/hackerone_disclosed_reports")
                 self.results["hackerone_dataset"] = "Manual download required"
                 return False
             except Exception as e:
