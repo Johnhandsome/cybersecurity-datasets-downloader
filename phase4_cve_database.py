@@ -29,7 +29,7 @@ class Phase4Downloader:
         self.phase_dir.mkdir(parents=True, exist_ok=True)
         
         self.api_base = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-        self.api_key = os.environ.get("NVD_API_KEY")
+        self.api_key = "fbc63a0b-ed3b-4881-89e4-9739ace7ffbb" # os.environ.get("NVD_API_KEY")
         
         # Rate limiting based on API key presence
         self.rate_limit_delay = 0.6 if self.api_key else 6.0
