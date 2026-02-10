@@ -77,7 +77,8 @@ def check_progress(base_dir: str = "./cybersecurity_datasets"):
         ("phase1_ctf_bugbounty", "CTF & Bug Bounty Reports"),
         ("phase2_exploits_tools", "Exploits & Security Tools"),
         ("phase3_yara_sigma", "YARA & Sigma Rules"),
-        ("phase4_cve_database", "CVE Database")
+        ("phase4_cve_database", "CVE Database"),
+        ("phase5_advanced_threats", "Advanced Threats & Black Hat Tactics")
     ]
     
     # Check each phase
@@ -192,6 +193,26 @@ def check_progress(base_dir: str = "./cybersecurity_datasets"):
                     files = len(results.get("cve_files", []))
                     print(f"      CVE Files: {files}")
                     print(f"      Total CVEs: {total_cves}")
+                
+                elif "phase5" in phase_dir:
+                    # Phase 5 statistics
+                    malware = len(results.get("malware_repos", []))
+                    phishing = len(results.get("phishing_repos", []))
+                    mobile = len(results.get("mobile_repos", []))
+                    cloud = len(results.get("cloud_repos", []))
+                    binary = len(results.get("binary_repos", []))
+                    apt = len(results.get("apt_repos", []))
+                    hf = len(results.get("hf_datasets", []))
+                    
+                    total = malware + phishing + mobile + cloud + binary + apt + hf
+                    print(f"      Total Repositories: {total}")
+                    print(f"        Malware Analysis: {malware}")
+                    print(f"        Phishing/Social Eng: {phishing}")
+                    print(f"        Mobile Security: {mobile}")
+                    print(f"        Cloud Security: {cloud}")
+                    print(f"        Binary Exploitation: {binary}")
+                    print(f"        APT Intelligence: {apt}")
+                    print(f"        HuggingFace Datasets: {hf}")
                 
                 # Show errors if any
                 errors = results.get("errors", [])
