@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  downloader:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: cybersec-datasets-downloader
+    volumes:
+      - ./data:/data
+    environment:
+      - NVD_API_KEY=${NVD_API_KEY:-}
+    restart: unless-stopped
+    command: python download_all.py --dir /data/cybersecurity_datasets
