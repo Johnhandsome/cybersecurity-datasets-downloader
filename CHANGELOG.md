@@ -5,6 +5,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-10
+
+### Fixed
+
+#### Phase 1: CTF & Bug Bounty Reports
+- **Fixed HackerOne dataset repository name**
+  - Changed from incorrect `cybersecurity-datasets/hackerone-reports`
+  - To correct `Hacker0x01/hackerone_disclosed_reports`
+  - Updated all documentation and CLI instructions
+
+#### Phase 2: Exploits & Security Tools
+- **Fixed pentesting dataset access issues**
+  - Added HuggingFace authentication check using `HfFolder.get_token()`
+  - Improved error messages for gated datasets
+  - Added clear instructions for authentication:
+    - Run `huggingface-cli login` if not authenticated
+    - Request access at dataset page if access not granted
+  - Better handling of restricted/gated dataset errors
+
+#### Phase 3: YARA & Sigma Rules
+- **Fixed SigmaC repository not found error**
+  - Replaced deprecated `https://github.com/SigmaHQ/sigmac` (archived/removed)
+  - With modern replacement `https://github.com/SigmaHQ/pySigma`
+  - Updated documentation to note the change
+
+#### Phase 4: CVE Database
+- **Fixed CVE download 404 errors**
+  - Corrected NVD API v2.0 datetime format
+  - Changed from `YYYY-MM-DDTHH:MM:SS.sss` to `YYYY-MM-DDTHH:MM:SS.sss UTC-00:00`
+  - Fixed both `pubStartDate`/`pubEndDate` and `lastModStartDate`/`lastModEndDate`
+  - Added graceful handling of 404 responses (no data available for year)
+  - Improved error messages for missing CVE data
+
+### Added
+
+#### Smart Duplicate Detection
+- **New `check_already_downloaded()` method** in all phases
+  - Checks if target directory exists
+  - Verifies if it's a valid git repository (`.git` folder)
+  - Verifies if directory has content
+  - Prevents re-downloading existing data
+  - Improves resume capability for interrupted downloads
+
+#### Update Functionality
+- **New `--update` flag** in `download_all.py`
+  - Updates existing git repositories with `git pull`
+  - Skips non-git content (HuggingFace datasets, CVE JSON files)
+  - Gracefully handles update failures
+  - Can be combined with `--phase` flag for targeted updates
+  - Usage: `python download_all.py --update`
+
+#### Enhanced Clone Operations
+- All phase downloaders now accept `update` parameter
+- Clone methods check for existing repos before downloading
+- Automatic update logic when `--update` flag is used
+- Better messages distinguishing between:
+  - New downloads
+  - Skipped (already exists)
+  - Updated (git pull succeeded)
+
+### Improved
+
+#### Error Messages
+- More descriptive error messages for all failure scenarios
+- Clear next-step instructions (💡 hints) for common issues
+- Better context for authentication requirements
+- Improved formatting with emojis for visual scanning
+
+#### Documentation
+- **New TROUBLESHOOTING.md** with comprehensive troubleshooting guide:
+  - HuggingFace authentication setup
+  - Git repository issues and solutions
+  - CVE/NVD API issues and datetime formats
+  - Network and timeout troubleshooting
+  - Disk space management
+  - Python dependencies troubleshooting
+  - Quick reference commands
+  - Environment variables reference
+- **Updated README.md**:
+  - Added link to TROUBLESHOOTING.md
+  - Documented `--update` flag usage
+  - Updated directory structure to show pySigma
+  - Enhanced troubleshooting section with quick fixes
+  - Added resume capability information
+- **Updated command-line help** to include new `--update` flag
+
+#### Robustness
+- Better validation of existing downloads
+- Improved handling of edge cases (empty directories, incomplete clones)
+- More resilient to network interruptions
+- Better handling of deprecated or moved repositories
+
+### Developer Experience
+- All phase downloaders now have consistent `update` parameter
+- Improved code consistency across all phases
+- Better separation of concerns (duplicate checking logic)
+- Type hints maintained throughout
+
 ## [1.0.0] - 2024-01-15
 
 ### Added

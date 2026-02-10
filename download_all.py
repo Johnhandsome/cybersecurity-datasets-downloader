@@ -24,14 +24,16 @@ from phase4_cve_database import Phase4Downloader
 class MasterDownloader:
     """Master orchestrator for all dataset downloads."""
     
-    def __init__(self, base_dir: str = "./cybersecurity_datasets"):
+    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False):
         """Initialize the master downloader.
         
         Args:
             base_dir: Base directory for all datasets
+            update: Whether to update existing repositories
         """
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.update = update
         
         self.phases = {
             1: ("CTF & Bug Bounty", Phase1Downloader),
@@ -120,7 +122,7 @@ class MasterDownloader:
         start_time = time.time()
         
         try:
-            downloader = downloader_class(str(self.base_dir))
+            downloader = downloader_class(str(self.base_dir), update=self.update)
             results = downloader.run()
             
             elapsed = time.time() - start_time
@@ -280,10 +282,19 @@ Examples:
         help="Run only a specific phase (1-4)"
     )
     
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Update existing repositories (git pull)"
+    )
+    
     args = parser.parse_args()
     
     # Create master downloader
-    master = MasterDownloader(args.dir)
+    master = MasterDownloader(args.dir, update=args.update)
+    
+    if args.update:
+        print("🔄 Update mode enabled - will update existing repositories\n")
     
     if args.phase:
         # Run single phase

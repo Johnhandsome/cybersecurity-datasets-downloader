@@ -14,13 +14,15 @@ from typing import Dict, Tuple
 class Phase3Downloader:
     """Downloads YARA and Sigma rules."""
     
-    def __init__(self, base_dir: str = "./cybersecurity_datasets"):
+    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False):
         """Initialize the Phase 3 downloader.
         
         Args:
             base_dir: Base directory for all datasets
+            update: Whether to update existing repositories
         """
         self.base_dir = Path(base_dir)
+        self.update = update
         self.phase_dir = self.base_dir / "phase3_yara_sigma"
         self.yara_dir = self.phase_dir / "yara_rules"
         self.sigma_dir = self.phase_dir / "sigma_rules"
@@ -36,6 +38,31 @@ class Phase3Downloader:
             "errors": []
         }
     
+    def check_already_downloaded(self, target_dir: Path) -> bool:
+        """Check if repository already exists and is valid.
+        
+        Args:
+            target_dir: Directory to check
+            
+        Returns:
+            bool: True if already exists and valid
+        """
+        if not target_dir.exists():
+            return False
+        
+        # Check if it's a valid git repo or has content
+        if (target_dir / ".git").exists():
+            return True
+        
+        # Check if directory has any content
+        try:
+            if len(list(target_dir.iterdir())) > 0:
+                return True
+        except Exception:
+            pass
+        
+        return False
+    
     def clone_repo(self, url: str, target_dir: Path) -> Tuple[bool, str]:
         """Clone a git repository with error handling.
         
@@ -47,9 +74,29 @@ class Phase3Downloader:
             Tuple of (success: bool, message: str)
         """
         try:
-            if target_dir.exists():
-                print(f"  ⏭️  Already exists: {target_dir.name}")
-                return True, f"Already exists: {target_dir.name}"
+            # Check if already downloaded
+            if self.check_already_downloaded(target_dir):
+                if self.update and (target_dir / ".git").exists():
+                    print(f"  🔄 Updating {target_dir.name}...")
+                    try:
+                        result = subprocess.run(
+                            ["git", "-C", str(target_dir), "pull"],
+                            capture_output=True,
+                            text=True,
+                            timeout=300
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ Updated {target_dir.name}")
+                            return True, f"Updated: {target_dir.name}"
+                        else:
+                            print(f"  ⚠️  Update failed, keeping existing: {target_dir.name}")
+                            return True, f"Already exists: {target_dir.name}"
+                    except Exception as e:
+                        print(f"  ⚠️  Update failed: {e}, keeping existing")
+                        return True, f"Already exists: {target_dir.name}"
+                else:
+                    print(f"  ⏭️  Already exists: {target_dir.name}")
+                    return True, f"Already exists: {target_dir.name}"
             
             print(f"  📦 Cloning {url}...")
             result = subprocess.run(
@@ -122,7 +169,7 @@ class Phase3Downloader:
         
         sigma_repos = [
             ("https://github.com/SigmaHQ/sigma", "sigmahq_sigma"),
-            ("https://github.com/SigmaHQ/sigmac", "sigmahq_sigmac")
+            ("https://github.com/SigmaHQ/pySigma", "pysigma")  # Modern replacement for deprecated sigmac
         ]
         
         success_count = 0

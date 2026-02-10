@@ -113,6 +113,16 @@ python download_all.py --phase 4
 python download_all.py --dir /path/to/custom/directory
 ```
 
+### Update Existing Repositories
+
+```bash
+# Update all git repositories with latest changes
+python download_all.py --update
+
+# Update specific phase
+python download_all.py --phase 3 --update
+```
+
 ### Check Progress
 
 ```bash
@@ -193,7 +203,7 @@ cybersecurity_datasets/
 │   │   └── neo23x0_signature_base/
 │   ├── sigma_rules/
 │   │   ├── sigmahq_sigma/
-│   │   └── sigmahq_sigmac/
+│   │   └── pysigma/
 │   ├── rules_statistics.json
 │   └── phase3_results.json
 ├── phase4_cve_database/
@@ -260,6 +270,34 @@ cybersecurity_datasets/
 
 ## 🔧 Troubleshooting
 
+**📖 For detailed troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
+
+### Quick Fixes
+
+#### HuggingFace Datasets Require Authentication
+
+If you see "Access to dataset X is restricted":
+
+1. Create HuggingFace account: https://huggingface.co/join
+2. Login via CLI:
+   ```bash
+   huggingface-cli login
+   ```
+3. Request access to gated datasets
+4. Re-run the downloader
+
+#### Avoiding Re-downloads
+
+The downloader automatically skips existing repositories. To update them:
+
+```bash
+python download_all.py --update
+```
+
+#### Resume Interrupted Downloads
+
+Simply re-run the same command. Already downloaded items will be skipped.
+
 ### Git Clone Failures
 
 **Problem:** Repository cloning times out or fails
@@ -314,6 +352,8 @@ pip install huggingface-hub
 # Login to Hugging Face (if dataset requires authentication)
 huggingface-cli login
 ```
+
+**See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more solutions.**
 
 ## ⚖️ Legal and Ethical Use
 
