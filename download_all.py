@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Master Downloader for Cybersecurity Datasets
-Orchestrates all 4 phases of dataset downloads.
+Orchestrates all 5 phases of dataset downloads.
 """
 
 import os
@@ -19,27 +19,31 @@ from phase1_ctf_bugbounty import Phase1Downloader
 from phase2_exploits_tools import Phase2Downloader
 from phase3_yara_sigma import Phase3Downloader
 from phase4_cve_database import Phase4Downloader
+from phase5_advanced_threats import Phase5Downloader
 
 
 class MasterDownloader:
     """Master orchestrator for all dataset downloads."""
     
-    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False):
+    def __init__(self, base_dir: str = "./cybersecurity_datasets", update: bool = False, skip_malware: bool = False):
         """Initialize the master downloader.
         
         Args:
             base_dir: Base directory for all datasets
             update: Whether to update existing repositories
+            skip_malware: Skip downloading live malware samples
         """
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self.update = update
+        self.skip_malware = skip_malware
         
         self.phases = {
             1: ("CTF & Bug Bounty", Phase1Downloader),
             2: ("Exploits & Tools", Phase2Downloader),
             3: ("YARA & Sigma Rules", Phase3Downloader),
-            4: ("CVE Database", Phase4Downloader)
+            4: ("CVE Database", Phase4Downloader),
+            5: ("Advanced Threats & Black Hat Tactics", Phase5Downloader)
         }
         
         self.results = {}
@@ -108,7 +112,7 @@ class MasterDownloader:
         """Execute a single phase with timing.
         
         Args:
-            phase_num: Phase number (1-4)
+            phase_num: Phase number (1-5)
             phase_name: Human-readable phase name
             downloader_class: Downloader class to instantiate
             
@@ -122,7 +126,11 @@ class MasterDownloader:
         start_time = time.time()
         
         try:
-            downloader = downloader_class(str(self.base_dir), update=self.update)
+            # Phase 5 needs skip_malware parameter
+            if phase_num == 5:
+                downloader = downloader_class(str(self.base_dir), update=self.update, skip_malware=self.skip_malware)
+            else:
+                downloader = downloader_class(str(self.base_dir), update=self.update)
             results = downloader.run()
             
             elapsed = time.time() - start_time
@@ -149,7 +157,7 @@ class MasterDownloader:
             }
     
     def run_all(self) -> Dict:
-        """Execute all 4 phases sequentially.
+        """Execute all 5 phases sequentially.
         
         Returns:
             Dict: All results with timing
@@ -264,8 +272,10 @@ def main():
 Examples:
   python download_all.py                    # Download all phases
   python download_all.py --phase 1          # Download only Phase 1
+  python download_all.py --phase 5          # Download Phase 5 (with safety prompts)
+  python download_all.py --skip-malware     # Download all, skip live malware
   python download_all.py --dir /data        # Use custom directory
-  python download_all.py --phase 4 --dir /data  # Phase 4 to custom directory
+  python download_all.py --phase 5 --skip-malware  # Phase 5 without malware
         """
     )
     
@@ -278,8 +288,8 @@ Examples:
     parser.add_argument(
         "--phase",
         type=int,
-        choices=[1, 2, 3, 4],
-        help="Run only a specific phase (1-4)"
+        choices=[1, 2, 3, 4, 5],
+        help="Run only a specific phase (1-5)"
     )
     
     parser.add_argument(
@@ -288,13 +298,22 @@ Examples:
         help="Update existing repositories (git pull)"
     )
     
+    parser.add_argument(
+        "--skip-malware",
+        action="store_true",
+        help="Skip downloading live malware samples in Phase 5 (safer option)"
+    )
+    
     args = parser.parse_args()
     
     # Create master downloader
-    master = MasterDownloader(args.dir, update=args.update)
+    master = MasterDownloader(args.dir, update=args.update, skip_malware=args.skip_malware)
     
     if args.update:
         print("🔄 Update mode enabled - will update existing repositories\n")
+    
+    if args.skip_malware:
+        print("⏭️  Skip malware mode enabled - live malware samples will be skipped\n")
     
     if args.phase:
         # Run single phase

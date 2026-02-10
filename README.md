@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A comprehensive, automated downloader for cybersecurity datasets designed for AI/ML training. This tool aggregates CTF writeups, exploit databases, YARA/Sigma rules, and CVE data into a structured format perfect for training security-focused language models.
+A comprehensive, automated downloader for cybersecurity datasets designed for AI/ML training. This tool aggregates CTF writeups, exploit databases, YARA/Sigma rules, CVE data, malware analysis, phishing tools, mobile security, cloud security, binary exploitation, and APT intelligence into a structured format perfect for training security-focused language models like **Llama 3 8B**.
 
 ## ✨ Features
 
@@ -31,13 +31,28 @@ A comprehensive, automated downloader for cybersecurity datasets designed for AI
 - **Smart rate limiting** - Automatic handling with/without API key
 - **Resumable downloads** - Skip already downloaded years
 
+### ⚠️ 🔥 Phase 5: Advanced Threats & Black Hat Tactics (NEW!)
+- **Malware Analysis** - 7 repositories including theZoo and vx-underground (**LIVE MALWARE** ⚠️)
+- **Phishing & Social Engineering** - 5 repositories with phishing tools and databases
+- **Mobile Security** - 7 repositories covering Android/iOS exploitation and analysis
+- **Crypto Attacks** - 4 repositories on cryptojacking and blockchain exploits
+- **Cloud Security** - 8 repositories for AWS/Azure/GCP security testing
+- **Binary Exploitation** - 7 repositories on ROP, heap, stack exploitation
+- **APT Intelligence** - 4 repositories with threat intelligence and APT reports
+- **HuggingFace Datasets** - Malware API calls, phishing emails, Android malware
+- **Safety Features** - Interactive warnings, `--skip-malware` flag, comprehensive safety documentation
+
+**⚠️ IMPORTANT:** Phase 5 includes live malware samples. Use ONLY in isolated VMs. See [docs/MALWARE_SAFETY.md](docs/MALWARE_SAFETY.md) for safety guidelines.
+
 ## 📋 Prerequisites
 
 - **Python 3.8+**
 - **Git**
-- **10+ GB free disk space** (varies by selected phases)
+- **15+ GB free disk space** (11 GB for all phases + overhead)
 - **Stable internet connection**
 - **(Optional) NVD API key** for faster CVE downloads
+- **(Optional) HuggingFace account** for gated datasets
+- **⚠️ Isolated VM required for Phase 5 malware samples**
 
 ## 🚀 Quick Start
 
@@ -105,6 +120,12 @@ python download_all.py --phase 3
 
 # Phase 4: CVE Database
 python download_all.py --phase 4
+
+# Phase 5: Advanced Threats & Black Hat Tactics (⚠️ includes live malware)
+python download_all.py --phase 5
+
+# Phase 5 without live malware samples (safer)
+python download_all.py --phase 5 --skip-malware
 ```
 
 ### Custom Directory
@@ -137,6 +158,7 @@ make phase1     # Download Phase 1 only
 make phase2     # Download Phase 2 only
 make phase3     # Download Phase 3 only
 make phase4     # Download Phase 4 only
+make phase5     # Download Phase 5 only
 make check      # Check progress
 make clean      # Remove downloaded datasets
 ```
@@ -145,12 +167,16 @@ make clean      # Remove downloaded datasets
 
 | Phase | Contents | Estimated Size | Estimated Time |
 |-------|----------|----------------|----------------|
-| **Phase 1** | CTF writeups (5 repos) + Bug bounty reports (3 repos) | ~500 MB | 5-10 min |
-| **Phase 2** | ExploitDB + 6 security tool repos + Python scripts | ~2-3 GB | 15-30 min |
-| **Phase 3** | YARA rules (2 repos) + Sigma rules (2 repos) | ~100 MB | 5-10 min |
-| **Phase 4** | CVE data for 2024-2025 + recent modifications | ~500 MB | 10-60 min* |
+| **Phase 1** | CTF writeups (5 repos) + Bug bounty reports (3 repos) | ~1.5 GB | 10-15 min |
+| **Phase 2** | ExploitDB + 6 security tool repos + Python scripts | ~2 GB | 15-30 min |
+| **Phase 3** | YARA rules (2 repos) + Sigma rules (2 repos) | ~0.5 GB | 5-10 min |
+| **Phase 4** | CVE data for 2024-2025 + recent modifications | ~0.5 GB | 10-60 min* |
+| **Phase 5** | Malware, phishing, mobile, cloud, binary, APT (45 repos) | ~6.5 GB | 30-60 min |
+| **TOTAL** | **All 5 Phases** | **~11 GB** | **70-175 min** |
 
 *Time varies based on NVD API key usage and rate limiting
+
+**Perfect for training Llama 3 8B!** The ~11 GB dataset size provides optimal coverage for fine-tuning an 8B parameter model.
 
 ## 🔑 NVD API Key Setup
 
@@ -212,8 +238,66 @@ cybersecurity_datasets/
 │   ├── cve_recent_modified.json
 │   ├── cve_statistics.json
 │   └── phase4_results.json
+├── phase5_advanced_threats/
+│   ├── malware_analysis/
+│   │   ├── malware_analysis/
+│   │   ├── malware_traffic_analysis/
+│   │   ├── theZoo/ (⚠️ LIVE MALWARE)
+│   │   └── vx_underground/ (⚠️ LIVE MALWARE)
+│   ├── phishing_social_eng/
+│   │   ├── phishing_database/
+│   │   ├── gophish/
+│   │   └── evilginx2/
+│   ├── mobile_security/
+│   │   ├── mobsf/
+│   │   ├── androguard/
+│   │   └── frida/
+│   ├── crypto_attacks/
+│   ├── cloud_security/
+│   │   ├── pacu/
+│   │   ├── cloudgoat/
+│   │   └── prowler/
+│   ├── binary_exploitation/
+│   │   ├── how2heap/
+│   │   └── pwn_college/
+│   ├── apt_intelligence/
+│   │   ├── apt_notes/
+│   │   └── mitre_attack/
+│   ├── huggingface_datasets/
+│   └── phase5_results.json
 └── download_summary.json
 ```
+
+## ⚠️ Phase 5 Safety Warning
+
+**CRITICAL:** Phase 5 includes repositories with **LIVE MALWARE SAMPLES**. 
+
+Before downloading Phase 5:
+1. Read [docs/MALWARE_SAFETY.md](docs/MALWARE_SAFETY.md) completely
+2. Set up an isolated VM (VMware/VirtualBox/QEMU)
+3. Disable network access in the VM
+4. Take VM snapshots before proceeding
+
+**Safer option:** Use `--skip-malware` flag to skip live malware repositories:
+```bash
+python download_all.py --phase 5 --skip-malware
+```
+
+This downloads all Phase 5 content EXCEPT theZoo and vx-underground (live malware).
+
+## 📚 Documentation
+
+### Phase 5 Specific Guides
+- **[docs/PHASE5_GUIDE.md](docs/PHASE5_GUIDE.md)** - Complete Phase 5 guide and usage
+- **[docs/MALWARE_SAFETY.md](docs/MALWARE_SAFETY.md)** - Essential safety procedures for malware handling
+- **[docs/LLAMA3_TRAINING_GUIDE.md](docs/LLAMA3_TRAINING_GUIDE.md)** - Fine-tuning Llama 3 8B on these datasets
+- **[docs/DATASET_BALANCE.md](docs/DATASET_BALANCE.md)** - Dataset balancing strategies
+
+### General Documentation
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
+- **[docs/PREPROCESSING.md](docs/PREPROCESSING.md)** - Data preprocessing guides
 
 ## 📋 Example Output
 
